@@ -676,7 +676,7 @@ void TrQuant::xIT( const TransformUnit& tu, const ComponentID compID, const CCoe
     // Calcula tamanho do buffer
     TCoeff *beginBuffer, *endBuffer;
 
-    int bufferStride = (MAX_CU_SIZE * MAX_CU_SIZE)
+    int bufferStride = (MAX_CU_SIZE * MAX_CU_SIZE);
 
     beginBuffer = tmp;
     endBuffer = beginBuffer + bufferStride;
