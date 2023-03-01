@@ -51,6 +51,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <algorithm>
 #include <math.h>
 
+#include "ApproxInter.h"
+
 //! \ingroup CommonLib
 //! \{
 
@@ -200,6 +202,11 @@ void Picture::create( ChromaFormat _chromaFormat, const Size& size, unsigned _ma
 {
   UnitArea::operator=( UnitArea( _chromaFormat, Area( Position{ 0, 0 }, size ) ) );
   margin            =  _margin;
+
+  //<Felipe>
+  if(ApproxInter::collectBufferSize) {
+    ApproxInter::tmpBool = true;
+  }
 
   if( _decoder )
   {
