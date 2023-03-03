@@ -2032,14 +2032,16 @@ void InterSearch::xMotionEstimation(CodingUnit& cu, CPelUnitBuf& origBuf, RefPic
   m_pcRdCost->setPredictor( predQuarter );
   m_pcRdCost->setCostScale(2);
 
+  // Felipe: calculate the beginBuffer and endBuffer limits for reconstructed samples buffer
   const Pel *beginBuffer, *endBuffer;
 
   beginBuffer = cStruct.piRefY - (ApproxInter::frameBufferWidth * ApproxInter::yMargin + ApproxInter::xMargin); 
   endBuffer = beginBuffer + (ApproxInter::frameBufferWidth * ApproxInter::frameBufferHeight);
 
+  // Felipe: starting approximation at reconstructed samples buffer at IME/FME  
   add_approx((size_t) beginBuffer, (size_t) endBuffer);
-
   start_level();
+  
 
   //  Do integer search
   if( ( m_motionEstimationSearchMethod == VVENC_MESEARCH_FULL ) || bBi || bQTBTMV )
@@ -2111,10 +2113,6 @@ void InterSearch::xMotionEstimation(CodingUnit& cu, CPelUnitBuf& origBuf, RefPic
     relatedCU.setMv( refPicList, iRefIdxPred, rcMv );
   }
 
-  end_level();
-
-  remove_approx((size_t) beginBuffer, (size_t) endBuffer);
-
   DTRACE( g_trace_ctx, D_ME, "%d %d %d :MECostFPel<L%d,%d>: %d,%d,%dx%d, %d", DTRACE_GET_COUNTER( g_trace_ctx, D_ME ), cu.slice->poc, 0, ( int ) refPicList, ( int ) bBi, cu.Y().x, cu.Y().y, cu.Y().width, cu.Y().height, ruiCost );
   // sub-pel refinement for sub-pel resolution
   if ( cu.imv == 0 || cu.imv == IMV_HPEL )
@@ -2138,6 +2136,12 @@ void InterSearch::xMotionEstimation(CodingUnit& cu, CPelUnitBuf& origBuf, RefPic
     xPatternSearchIntRefine( cu, cStruct, rcMv, rcMvPred, riMVPIdx, ruiBits, ruiCost, amvpInfo, fWeight);
   }
   DTRACE(g_trace_ctx, D_ME, "   MECost<L%d,%d>: %6d (%d)  MV:%d,%d\n", (int)refPicList, (int)bBi, ruiCost, ruiBits, rcMv.hor << 2, rcMv.ver << 2);
+
+  // Felipe: ending approximation at reconstructed samples buffer at IME/FME
+  end_level();
+  remove_approx((size_t) beginBuffer, (size_t) endBuffer);
+  
+
 }
 
 
@@ -5620,6 +5624,16 @@ void InterSearch::xAffineMotionEstimation(CodingUnit& cu,
   {
     acMvTemp[2].roundAffinePrecInternal2Amvr(cu.imv);
   }
+
+  // Felipe: calculate the beginBuffer and endBuffer limits for reconstructed samples buffer
+  const Pel *beginBuffer, *endBuffer;
+  beginBuffer = refPic->getRecoBuf(COMP_Y).buf - (ApproxInter::frameBufferWidth * ApproxInter::yMargin + ApproxInter::xMargin); 
+  endBuffer = beginBuffer + (ApproxInter::frameBufferWidth * ApproxInter::frameBufferHeight);
+
+  // Felipe: starting of approxation to reconstructed samples buffer at AME  
+  add_approx((size_t) beginBuffer, (size_t) endBuffer);
+  start_level();
+
   xPredAffineBlk(COMP_Y, cu, refPic, acMvTemp, predBuf, false, cu.cs->slice->clpRngs[COMP_Y], refPicList);
 
   // get error
@@ -5923,6 +5937,10 @@ void InterSearch::xAffineMotionEstimation(CodingUnit& cu,
   ruiBits = uiBitsBest;
   ruiCost = uiCostBest;
   DTRACE(g_trace_ctx, D_COMMON, " (%d) uiBitsBest=%d, uiCostBest=%d\n", DTRACE_GET_COUNTER(g_trace_ctx, D_COMMON), uiBitsBest, uiCostBest);
+
+  // Felipe: ending of approxation to reconstructed samples buffer at AME  
+  end_level();
+  remove_approx((size_t) beginBuffer, (size_t) endBuffer);
 }
 
 void InterSearch::xEstimateAffineAMVP(CodingUnit& cu, AffineAMVPInfo& affineAMVPInfo, CPelUnitBuf& origBuf, RefPicList refPicList, int iRefIdx, Mv acMvPred[3], Distortion& distBiP)
