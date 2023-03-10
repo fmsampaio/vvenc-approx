@@ -2032,13 +2032,15 @@ void InterSearch::xMotionEstimation(CodingUnit& cu, CPelUnitBuf& origBuf, RefPic
   m_pcRdCost->setPredictor( predQuarter );
   m_pcRdCost->setCostScale(2);
 
-  // Felipe: calculate the beginBuffer and endBuffer limits for reconstructed samples buffer
+  // Felipe: calculate the beginBuffer and endBuffer limits for original samples buffer
   const Pel *beginBuffer, *endBuffer;
+  
+  //std::cout << "[DBG] " << cu.lx() << "x" << cu.ly() << std::endl;
 
-  beginBuffer = cStruct.piRefY - (ApproxInter::frameBufferWidth * ApproxInter::yMargin + ApproxInter::xMargin); 
-  endBuffer = beginBuffer + (ApproxInter::frameBufferWidth * ApproxInter::frameBufferHeight);
+  beginBuffer = pBuf->Y().buf - (cu.lx() + ApproxInter::frameOrigBufferWidth * cu.ly()); 
+  endBuffer = beginBuffer + (ApproxInter::frameOrigBufferWidth * ApproxInter::frameOrigBufferHeight);
 
-  // Felipe: starting approximation at reconstructed samples buffer at IME/FME  
+  // Felipe: starting approximation at original samples buffer at IME/FME  
   add_approx((size_t) beginBuffer, (size_t) endBuffer);
   start_level();
   
@@ -2137,7 +2139,7 @@ void InterSearch::xMotionEstimation(CodingUnit& cu, CPelUnitBuf& origBuf, RefPic
   }
   DTRACE(g_trace_ctx, D_ME, "   MECost<L%d,%d>: %6d (%d)  MV:%d,%d\n", (int)refPicList, (int)bBi, ruiCost, ruiBits, rcMv.hor << 2, rcMv.ver << 2);
 
-  // Felipe: ending approximation at reconstructed samples buffer at IME/FME
+  // Felipe: ending approximation at original samples buffer at IME/FME
   end_level();
   remove_approx((size_t) beginBuffer, (size_t) endBuffer);
   
@@ -5625,12 +5627,12 @@ void InterSearch::xAffineMotionEstimation(CodingUnit& cu,
     acMvTemp[2].roundAffinePrecInternal2Amvr(cu.imv);
   }
 
-  // Felipe: calculate the beginBuffer and endBuffer limits for reconstructed samples buffer
+  // Felipe: calculate the beginBuffer and endBuffer limits for original samples buffer
   const Pel *beginBuffer, *endBuffer;
-  beginBuffer = refPic->getRecoBuf(COMP_Y).buf - (ApproxInter::frameBufferWidth * ApproxInter::yMargin + ApproxInter::xMargin); 
-  endBuffer = beginBuffer + (ApproxInter::frameBufferWidth * ApproxInter::frameBufferHeight);
+  beginBuffer = pBuf->Y().buf - (cu.lx() + ApproxInter::frameOrigBufferWidth * cu.ly()); 
+  endBuffer = beginBuffer + (ApproxInter::frameOrigBufferWidth * ApproxInter::frameOrigBufferHeight);
 
-  // Felipe: starting of approxation to reconstructed samples buffer at AME  
+  // Felipe: starting of approxation to original samples buffer at AME  
   add_approx((size_t) beginBuffer, (size_t) endBuffer);
   start_level();
 

@@ -10,8 +10,8 @@ class ApproxInter {
         static int debugEnable;
 
         static double MEReadBER, MEWriteBER;
-        static unsigned frameBufferWidth, frameBufferHeight;
-        static unsigned xMargin, yMargin;
+        static unsigned frameOrigBufferWidth, frameOrigBufferHeight;
+        //static unsigned xMargin, yMargin;
         static bool collectBufferSize, tmpBool;
 
         static void init();
