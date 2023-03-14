@@ -57,6 +57,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "CommonLib/dtrace_next.h"
 #include "CommonLib/dtrace_buffer.h"
 #include "CommonLib/TimeProfiler.h"
+#include "CommonLib/approx.h"
 
 #include <math.h>
 
@@ -5565,6 +5566,16 @@ void InterSearch::xAffineMotionEstimation(CodingUnit& cu,
   // pred YUV
   PelUnitBuf  predBuf = m_tmpAffiStorage.getCompactBuf(cu);
 
+  // Felipe: calculating and adding approximations at AME prediction buffer
+  const Pel *beginBuffer, *endBuffer;  
+  int bufferStride = predBuf.Y().width * predBuf.Y().height;
+
+  beginBuffer = predBuf.Y().buf;
+  endBuffer = beginBuffer + bufferStride;
+
+  add_approx((unsigned long long) beginBuffer, (unsigned long long) endBuffer);
+  start_level();
+
   // Set start Mv position, use input mv as started search mv
   Mv acMvTemp[3];
   ::memcpy(acMvTemp, acMv, sizeof(Mv) * 3);
@@ -5907,6 +5918,10 @@ void InterSearch::xAffineMotionEstimation(CodingUnit& cu,
   ruiBits = uiBitsBest;
   ruiCost = uiCostBest;
   DTRACE(g_trace_ctx, D_COMMON, " (%d) uiBitsBest=%d, uiCostBest=%d\n", DTRACE_GET_COUNTER(g_trace_ctx, D_COMMON), uiBitsBest, uiCostBest);
+
+  end_level();
+  remove_approx((unsigned long long) beginBuffer, (unsigned long long) endBuffer);
+  
 }
 
 void InterSearch::xEstimateAffineAMVP(CodingUnit& cu, AffineAMVPInfo& affineAMVPInfo, CPelUnitBuf& origBuf, RefPicList refPicList, int iRefIdx, Mv acMvPred[3], Distortion& distBiP)
