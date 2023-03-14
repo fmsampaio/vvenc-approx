@@ -2037,8 +2037,11 @@ void InterSearch::xMotionEstimation(CodingUnit& cu, CPelUnitBuf& origBuf, RefPic
   
   //std::cout << "[DBG] " << cu.lx() << "x" << cu.ly() << std::endl;
 
-  beginBuffer = cStruct.pcPatternKey->buf - (cu.lx() + ApproxInter::frameOrigBufferWidth * cu.ly()); 
-  endBuffer = beginBuffer + (ApproxInter::frameOrigBufferWidth * ApproxInter::frameOrigBufferHeight);
+  //beginBuffer = cStruct.pcPatternKey->buf - (cu.lx() + ApproxInter::frameOrigBufferWidth * cu.ly()); 
+  //endBuffer = beginBuffer + (ApproxInter::frameOrigBufferWidth * ApproxInter::frameOrigBufferHeight);
+
+  beginBuffer = cStruct.pcPatternKey->buf;
+  endBuffer = beginBuffer + (cStruct.pcPatternKey->width * cStruct.pcPatternKey->height);
 
   // Felipe: starting approximation at original samples buffer at IME/FME  
   add_approx((size_t) beginBuffer, (size_t) endBuffer);
@@ -5628,8 +5631,12 @@ void InterSearch::xAffineMotionEstimation(CodingUnit& cu,
 
   // Felipe: calculate the beginBuffer and endBuffer limits for original samples buffer
   const Pel *beginBuffer, *endBuffer;
-  beginBuffer = pBuf->Y().buf - (cu.lx() + ApproxInter::frameOrigBufferWidth * cu.ly()); 
-  endBuffer = beginBuffer + (ApproxInter::frameOrigBufferWidth * ApproxInter::frameOrigBufferHeight);
+  
+  //beginBuffer = pBuf->Y().buf - (cu.lx() + ApproxInter::frameOrigBufferWidth * cu.ly()); 
+  //endBuffer = beginBuffer + (ApproxInter::frameOrigBufferWidth * ApproxInter::frameOrigBufferHeight);
+
+  beginBuffer = pBuf->Y().buf;
+  endBuffer = beginBuffer + (pBuf->Y().width * pBuf->Y().height);
 
   // Felipe: starting of approxation to original samples buffer at AME  
   add_approx((size_t) beginBuffer, (size_t) endBuffer);
