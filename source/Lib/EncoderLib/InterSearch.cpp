@@ -2037,14 +2037,13 @@ void InterSearch::xMotionEstimation(CodingUnit& cu, CPelUnitBuf& origBuf, RefPic
   
   //std::cout << "[DBG] " << cu.lx() << "x" << cu.ly() << std::endl;
 
-  beginBuffer = pBuf->Y().buf - (cu.lx() + ApproxInter::frameOrigBufferWidth * cu.ly()); 
+  beginBuffer = cStruct.pcPatternKey->buf - (cu.lx() + ApproxInter::frameOrigBufferWidth * cu.ly()); 
   endBuffer = beginBuffer + (ApproxInter::frameOrigBufferWidth * ApproxInter::frameOrigBufferHeight);
 
   // Felipe: starting approximation at original samples buffer at IME/FME  
   add_approx((size_t) beginBuffer, (size_t) endBuffer);
   start_level();
   
-
   //  Do integer search
   if( ( m_motionEstimationSearchMethod == VVENC_MESEARCH_FULL ) || bBi || bQTBTMV )
   {
