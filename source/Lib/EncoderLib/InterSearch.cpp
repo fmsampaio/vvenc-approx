@@ -5600,6 +5600,8 @@ void InterSearch::xAffineMotionEstimation(CodingUnit& cu,
   // pred YUV
   PelUnitBuf  predBuf = m_tmpAffiStorage.getCompactBuf(cu);
 
+  
+
   // Set start Mv position, use input mv as started search mv
   Mv acMvTemp[3];
   ::memcpy(acMvTemp, acMv, sizeof(Mv) * 3);
@@ -5651,11 +5653,22 @@ void InterSearch::xAffineMotionEstimation(CodingUnit& cu,
   endRecoBuffer = beginRecoBuffer + (ApproxInter::frameRecoBufferWidth * ApproxInter::frameRecoBufferHeight);
   
 
+
+  // Felipe: calculating and adding approximations at AME prediction buffer
+  const Pel *beginPredBuffer, *endPredBuffer;  
+  int bufferStride = predBuf.Y().width * predBuf.Y().height;
+  beginPredBuffer = predBuf.Y().buf;
+  endPredBuffer = beginPredBuffer + bufferStride;
+
+
   // Felipe: starting of approxation to original samples buffer at AME  
   add_approx((size_t) beginOrigBuffer, (size_t) endOrigBuffer);
 
   // Felipe: starting of approxation to reconstructed samples buffer at AME  
   add_approx((size_t) beginRecoBuffer, (size_t) endRecoBuffer);
+
+  // Felipe: starting of approxation to prediction samples buffer at AME  
+  add_approx((unsigned long long) beginPredBuffer, (unsigned long long) endPredBuffer);  
 
   start_level();
 
@@ -5964,10 +5977,13 @@ void InterSearch::xAffineMotionEstimation(CodingUnit& cu,
   DTRACE(g_trace_ctx, D_COMMON, " (%d) uiBitsBest=%d, uiCostBest=%d\n", DTRACE_GET_COUNTER(g_trace_ctx, D_COMMON), uiBitsBest, uiCostBest);
   
   end_level();
-  // Felipe: ending of approxation to original samples buffer at AME  
+  // Felipe: ending of approximation to original samples buffer at AME  
   remove_approx((size_t) beginOrigBuffer, (size_t) endOrigBuffer);
-  // Felipe: ending of approxation to reconstructed samples buffer at AME  
+  // Felipe: ending of approximation to reconstructed samples buffer at AME  
   remove_approx((size_t) beginRecoBuffer, (size_t) endRecoBuffer);
+  // Felipe: ending of approximation to prediction samples buffer at AME
+  remove_approx((unsigned long long) beginPredBuffer, (unsigned long long) endPredBuffer);
+
 }
 
 void InterSearch::xEstimateAffineAMVP(CodingUnit& cu, AffineAMVPInfo& affineAMVPInfo, CPelUnitBuf& origBuf, RefPicList refPicList, int iRefIdx, Mv acMvPred[3], Distortion& distBiP)
