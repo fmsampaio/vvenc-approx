@@ -63,6 +63,8 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include <math.h>
 
+extern int extWidthFiltered, extHeightFiltered;
+
  //! \ingroup EncoderLib
  //! \{
 
@@ -2121,6 +2123,11 @@ void InterSearch::xMotionEstimation(CodingUnit& cu, CPelUnitBuf& origBuf, RefPic
   }
 
   DTRACE( g_trace_ctx, D_ME, "%d %d %d :MECostFPel<L%d,%d>: %d,%d,%dx%d, %d", DTRACE_GET_COUNTER( g_trace_ctx, D_ME ), cu.slice->poc, 0, ( int ) refPicList, ( int ) bBi, cu.Y().x, cu.Y().y, cu.Y().width, cu.Y().height, ruiCost );
+
+  // Felipe: start approximation at filtered samples buffer at FME
+  addApproxFiltBuffer();  
+  start_level();
+
   // sub-pel refinement for sub-pel resolution
   if ( cu.imv == 0 || cu.imv == IMV_HPEL )
   {
@@ -2148,7 +2155,7 @@ void InterSearch::xMotionEstimation(CodingUnit& cu, CPelUnitBuf& origBuf, RefPic
   end_level();
   remove_approx((size_t) beginOrigBuffer, (size_t) endOrigBuffer);
   remove_approx((size_t) beginRecoBuffer, (size_t) endRecoBuffer);
-  
+  removeApproxFiltBuffer();  
 
 }
 
@@ -6968,6 +6975,61 @@ bool InterSearch::searchBvIBC(const CodingUnit& cu, int xPos, int yPos, int widt
   bool isDecomp = ( ( refPosBR.x >> ctuSizeLog2 ) < ( cuPos.x >> ctuSizeLog2 ) ) || ( refRightX < xPos && refBottomY < yPos ) || isYPartBefore( cu.splitSeries, ctuSizeLog2, cuPos, refPosBR );
 
   return isDecomp;
+}
+
+void InterSearch::addApproxFiltBuffer() {
+  for(uint32_t c = 0; c < MAX_NUM_COMP; c++) {
+    for (uint32_t i = 0; i < LUMA_INTERPOLATION_FILTER_SUB_SAMPLE_POSITIONS_SIGNAL; i++) {
+
+      //m_filteredBlockTmp[i][c] = ( Pel* ) xMalloc( Pel, ( extWidth + 4 ) * ( extHeight + 7 + 4 ) );
+      int bufferTmpStride = ( extWidthFiltered + 4 ) * ( extHeightFiltered + 7 + 4 );
+
+      const Pel *beginBufferTmp = m_filteredBlockTmp[i][c];
+      const Pel *endBufferTmp = beginBufferTmp + bufferTmpStride;
+
+      add_approx((size_t) beginBufferTmp, (size_t) endBufferTmp);
+
+      for (uint32_t j = 0; j < LUMA_INTERPOLATION_FILTER_SUB_SAMPLE_POSITIONS_SIGNAL; j++) {
+        /* code */
+        //m_filteredBlock[i][j][c] = ( Pel* ) xMalloc( Pel, extWidth * extHeight );
+        const Pel *beginBufferFilt, *endBufferFilt;
+        int bufferFiltStride = extWidthFiltered * extHeightFiltered;
+
+        beginBufferFilt = m_filteredBlock[i][j][c];
+        endBufferFilt = beginBufferFilt + bufferFiltStride;
+
+        add_approx((size_t) beginBufferFilt, (size_t) endBufferFilt);
+      } 
+    }    
+  }
+}
+
+void InterSearch::removeApproxFiltBuffer() {
+  for( uint32_t c = 0; c < MAX_NUM_COMP; c++ ) {
+    for( uint32_t i = 0; i < LUMA_INTERPOLATION_FILTER_SUB_SAMPLE_POSITIONS_SIGNAL; i++ ) {
+
+      //m_filteredBlockTmp[i][c] = ( Pel* ) xMalloc( Pel, ( extWidth + 4 ) * ( extHeight + 7 + 4 ) );
+      const Pel *beginBufferTmp, *endBufferTmp;
+      int bufferTmpStride = ( extWidthFiltered + 4 ) * ( extHeightFiltered + 7 + 4 );
+
+      beginBufferTmp = m_filteredBlockTmp[i][c];
+      endBufferTmp = beginBufferTmp + bufferTmpStride;
+
+      remove_approx((size_t) beginBufferTmp, (size_t) endBufferTmp);
+
+      for( uint32_t j = 0; j < LUMA_INTERPOLATION_FILTER_SUB_SAMPLE_POSITIONS_SIGNAL; j++ ) {
+
+        //m_filteredBlock[i][j][c] = ( Pel* ) xMalloc( Pel, extWidth * extHeight );
+        const Pel *beginBufferFilt, *endBufferFilt;
+        int bufferFiltStride = extWidthFiltered * extHeightFiltered;
+
+        beginBufferFilt = m_filteredBlock[i][j][c];
+        endBufferFilt = beginBufferFilt + bufferFiltStride;
+
+        remove_approx((size_t) beginBufferFilt, (size_t) endBufferFilt);
+      }
+    }
+  }
 }
 
 } // namespace vvenc
