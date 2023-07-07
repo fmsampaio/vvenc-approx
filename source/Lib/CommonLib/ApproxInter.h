@@ -11,8 +11,9 @@ class ApproxInter {
 
         static double MEReadBER, MEWriteBER;
         static unsigned frameOrigBufferWidth, frameOrigBufferHeight;
-        //static unsigned xMargin, yMargin;
-        static bool collectBufferSize, tmpBool;
+        static unsigned frameRecoBufferWidth, frameRecoBufferHeight;
+        static unsigned xMargin, yMargin;
+        static bool collectOrigBufferSize, collectRecoBufferSize, tmpOrigBool, tmpRecoBool;
 
         static void init();
         static void initDebug();

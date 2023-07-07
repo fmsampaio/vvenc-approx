@@ -4,9 +4,11 @@ double ApproxInter::MEReadBER;
 double ApproxInter::MEWriteBER;
 
 unsigned ApproxInter::frameOrigBufferWidth, ApproxInter::frameOrigBufferHeight;
-//unsigned ApproxInter::xMargin, ApproxInter::yMargin;
+unsigned ApproxInter::frameRecoBufferWidth, ApproxInter::frameRecoBufferHeight;
+unsigned ApproxInter::xMargin, ApproxInter::yMargin;
 
-bool ApproxInter::collectBufferSize, ApproxInter::tmpBool;
+bool ApproxInter::collectOrigBufferSize, ApproxInter::tmpOrigBool;
+bool ApproxInter::collectRecoBufferSize, ApproxInter::tmpRecoBool;
 
 
 int ApproxInter::debugEnable;
@@ -14,8 +16,10 @@ int ApproxInter::debugEnable;
 std::fstream ApproxInter::fp;
 
 void ApproxInter::init() {
-    collectBufferSize = true;
-    tmpBool = false;
+    collectOrigBufferSize = true;
+    collectRecoBufferSize = true;
+    tmpOrigBool = false;
+    tmpRecoBool = false;
 }
 
 void ApproxInter::initDebug() {
